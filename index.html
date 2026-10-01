@@ -49,6 +49,63 @@
             opacity: 0;
             pointer-events: none;
         }
+
+        /* Counter */
+        #counter {
+            margin-top: 60px;
+            color: #555;
+            font-size: 13px;
+            line-height: 1.8;
+        }
+
+        #counter .days {
+            display: block;
+            color: #999;
+            font-size: 22px;
+            letter-spacing: 2px;
+        }
+
+        #counter .clock {
+            display: block;
+            color: #333;
+            font-size: 11px;
+            letter-spacing: 3px;
+            margin-top: 4px;
+        }
+
+        /* Floating text */
+        .float {
+            animation:
+                driftX var(--dur-x, 5s)  ease-in-out infinite var(--delay-x, 0s),
+                driftY var(--dur-y, 7s)  ease-in-out infinite var(--delay-y, 0s),
+                tilt   var(--dur-t, 9s)  ease-in-out infinite var(--delay-t, 0s),
+                sway   var(--dur-s, 12s) ease-in-out infinite var(--delay-s, 0s);
+            will-change: translate, transform, rotate;
+        }
+
+        @keyframes driftX {
+            0%, 100% { translate: -2px 0; }
+            50%      { translate:  2px 0; }
+        }
+
+        @keyframes driftY {
+            0%, 100% { transform: translateY(-2px); }
+            50%      { transform: translateY( 2px); }
+        }
+
+        @keyframes tilt {
+            0%, 100% { rotate: -1.2deg; }
+            50%      { rotate:  1.2deg; }
+        }
+
+        @keyframes sway {
+            0%, 100% { scale: 1 1; skew: -0.6deg 0deg; }
+            50%      { scale: 1 1; skew:  0.6deg 0deg; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .float { animation: none; }
+        }
     </style>
 </head>
 
@@ -64,10 +121,76 @@
 
     <p>this place is quiet, isn't it?</p>
 
+    <div id="counter">
+        days since I've gone insane:
+        <span class="days" id="days">0</span>
+        <span class="clock" id="clock">00 : 00 : 00</span>
+    </div>
+
     <script>
         const intro = document.getElementById("intro");
         const music = document.getElementById("music");
 
+        // --- counter ---
+        // month is 0-indexed, so 9 = October
+        const START = new Date(2026, 9, 1, 0, 0, 0);
+
+        const daysEl = document.getElementById("days");
+        const clockEl = document.getElementById("clock");
+
+        function pad(n) {
+            return String(n).padStart(2, "0");
+        }
+
+        function tick() {
+            const elapsed = Date.now() - START.getTime();
+
+            const totalSeconds = Math.floor(elapsed / 1000);
+            const days    = Math.floor(totalSeconds / 86400);
+            const hours   = Math.floor((totalSeconds % 86400) / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+
+            daysEl.textContent = days;
+            clockEl.textContent = pad(hours) + " : " + pad(minutes) + " : " + pad(seconds);
+        }
+
+        tick();
+        setInterval(tick, 1000);
+
+        // --- floating text setup ---
+        function rand(min, max) {
+            return min + Math.random() * (max - min);
+        }
+
+        function applyFloat() {
+            document.querySelectorAll("body *").forEach(el => {
+                const hasOwnText = Array.from(el.childNodes).some(
+                    n => n.nodeType === 3 && n.textContent.trim() !== ""
+                );
+                if (!hasOwnText) return;
+
+                if (getComputedStyle(el).display === "inline") {
+                    el.style.display = "inline-block";
+                }
+
+                el.classList.add("float");
+
+                el.style.setProperty("--dur-x", rand(4, 7).toFixed(2) + "s");
+                el.style.setProperty("--dur-y", rand(5, 8).toFixed(2) + "s");
+                el.style.setProperty("--dur-t", rand(7, 12).toFixed(2) + "s");
+                el.style.setProperty("--dur-s", rand(10, 16).toFixed(2) + "s");
+
+                el.style.setProperty("--delay-x", (-Math.random() * 20).toFixed(2) + "s");
+                el.style.setProperty("--delay-y", (-Math.random() * 20).toFixed(2) + "s");
+                el.style.setProperty("--delay-t", (-Math.random() * 20).toFixed(2) + "s");
+                el.style.setProperty("--delay-s", (-Math.random() * 30).toFixed(2) + "s");
+            });
+        }
+
+        applyFloat();
+
+        // --- intro ---
         let started = false;
 
         intro.addEventListener("click", () => {
@@ -89,4 +212,4 @@
     </script>
 
 </body>
-</html>
+    </html>
