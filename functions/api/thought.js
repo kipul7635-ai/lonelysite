@@ -10,6 +10,17 @@ export async function onRequestPost({ request, env }) {
   if (!text) return json({ error: "empty" }, 400);
   if (text.length > 500) return json({ error: "too long" }, 400);
 
+  const jobs = [sendTelegram(env, text)];
+  if (env.DISCORD_WEBHOOK_URL) jobs.push(sendDiscord(env, text));
+
+  const results = await Promise.allSettled(jobs);
+  const anyOk = results.some((r) => r.status === "fulfilled" && r.value);
+
+  if (!anyOk) return json({ error: "delivery failed" }, 502);
+  return json({ ok: true });
+}
+
+async function sendTelegram(env, text) {
   const res = await fetch(
     `https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`,
     {
@@ -21,9 +32,19 @@ export async function onRequestPost({ request, env }) {
       }),
     }
   );
+  return res.ok;
+}
 
-  if (!res.ok) return json({ error: "telegram failed" }, 502);
-  return json({ ok: true });
+async function sendDiscord(env, text) {
+  const res = await fetch(env.DISCORD_WEBHOOK_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      content: "💭 " + text,
+      allowed_mentions: { parse: [] },
+    }),
+  });
+  return res.ok;
 }
 
 function json(data, status = 200) {
