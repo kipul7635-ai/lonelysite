@@ -7,7 +7,13 @@
 
     <style>
         body {
-            background: #111;
+            background-color: #111;
+            background-image: url("images/background1.png");
+            background-size: cover;
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+
             color: white;
             font-family: monospace;
             text-align: center;
@@ -31,7 +37,6 @@
             opacity: 1;
             transition: opacity 1.5s ease;
 
-            /* prevent blue flash / selection on tap */
             -webkit-tap-highlight-color: transparent;
             -webkit-touch-callout: none;
             user-select: none;
@@ -50,22 +55,28 @@
             pointer-events: none;
         }
 
-        /* Counter */
-        #counter {
+        /* Counters */
+        #counter,
+        #counter-2,
+        #counter-3 {
             margin-top: 60px;
             color: #555;
             font-size: 13px;
             line-height: 1.8;
         }
 
-        #counter .days {
+        #counter .days,
+        #counter-2 .days,
+        #counter-3 .days {
             display: block;
             color: #999;
             font-size: 22px;
             letter-spacing: 2px;
         }
 
-        #counter .clock {
+        #counter .clock,
+        #counter-2 .clock,
+        #counter-3 .clock {
             display: block;
             color: #333;
             font-size: 11px;
@@ -127,36 +138,72 @@
         <span class="clock" id="clock">00 : 00 : 00</span>
     </div>
 
+    <div id="counter-2">
+        days since i started being a burden:
+        <span class="days" id="burden-days">0</span>
+        <span class="clock" id="burden-years">that's 0 years to be precise</span>
+    </div>
+
+    <div id="counter-3">
+        <span class="days" id="thoughts">0</span>
+        thoughts thought of
+    </div>
+
     <script>
         const intro = document.getElementById("intro");
         const music = document.getElementById("music");
 
-        // --- counter ---
-        // month is 0-indexed, so 9 = October
-        const START = new Date(2026, 9, 1, 0, 0, 0);
+        // --- counters 1 & 2 ---
+        const START_INSANITY = new Date(2026, 9, 1, 0, 0, 0);
+        const START_BURDEN   = new Date(2007, 9, 14, 0, 0, 0);
 
-        const daysEl = document.getElementById("days");
-        const clockEl = document.getElementById("clock");
+        const daysEl        = document.getElementById("days");
+        const clockEl       = document.getElementById("clock");
+        const burdenDaysEl  = document.getElementById("burden-days");
+        const burdenYearsEl = document.getElementById("burden-years");
 
         function pad(n) {
             return String(n).padStart(2, "0");
         }
 
         function tick() {
-            const elapsed = Date.now() - START.getTime();
+            const now = Date.now();
 
-            const totalSeconds = Math.floor(elapsed / 1000);
-            const days    = Math.floor(totalSeconds / 86400);
-            const hours   = Math.floor((totalSeconds % 86400) / 3600);
-            const minutes = Math.floor((totalSeconds % 3600) / 60);
-            const seconds = totalSeconds % 60;
+            const e1 = Math.max(0, now - START_INSANITY.getTime());
+            const s1 = Math.floor(e1 / 1000);
 
-            daysEl.textContent = days;
-            clockEl.textContent = pad(hours) + " : " + pad(minutes) + " : " + pad(seconds);
+            daysEl.textContent = Math.floor(s1 / 86400);
+            clockEl.textContent =
+                pad(Math.floor((s1 % 86400) / 3600)) + " : " +
+                pad(Math.floor((s1 % 3600) / 60))     + " : " +
+                pad(s1 % 60);
+
+            const e2 = Math.max(0, now - START_BURDEN.getTime());
+            const s2 = Math.floor(e2 / 1000);
+            const years = e2 / (365.25 * 24 * 60 * 60 * 1000);
+
+            burdenDaysEl.textContent  = Math.floor(s2 / 86400);
+            burdenYearsEl.textContent = "that's " + years.toFixed(4) + " years to be precise";
         }
 
         tick();
         setInterval(tick, 1000);
+
+        // --- counter 3: thoughts thought of ---
+        const thoughtsEl = document.getElementById("thoughts");
+
+        let thoughts = Math.floor(Math.random() * 1_000_001);
+        thoughtsEl.textContent = thoughts.toLocaleString();
+
+        function thoughtTick() {
+            thoughts++;
+            thoughtsEl.textContent = thoughts.toLocaleString();
+
+            const delay = 100 + Math.random() * 900;
+            setTimeout(thoughtTick, delay);
+        }
+
+        thoughtTick();
 
         // --- floating text setup ---
         function rand(min, max) {
@@ -212,4 +259,4 @@
     </script>
 
 </body>
-    </html>
+</html>
