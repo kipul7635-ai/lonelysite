@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,12 +18,66 @@
         h1 {
             font-size: 30px;
         }
+
+        /* Intro screen */
+        #intro {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            cursor: pointer;
+            opacity: 1;
+            transition: opacity 1.5s ease;
+        }
+
+        #intro span {
+            color: #444;
+            font-size: 14px;
+        }
+
+        #intro.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
     </style>
 </head>
 
 <body>
 
+    <div id="intro">
+        <span>gaze?</span>
+    </div>
+
+    <audio id="music" loop>
+        <source src="music/song.mp3" type="audio/mpeg">
+    </audio>
+
     <p>this place is quiet, isn't it?</p>
+
+    <script>
+        const intro = document.getElementById("intro");
+        const music = document.getElementById("music");
+
+        let started = false;
+
+        intro.addEventListener("click", () => {
+            if (started) return;
+            started = true;
+
+            music.play().catch(error => {
+                console.log("Music could not start:", error);
+            });
+
+            intro.classList.add("hidden");
+
+            setTimeout(() => {
+                intro.remove();
+            }, 1600);
+        });
+    </script>
 
 </body>
 </html>
