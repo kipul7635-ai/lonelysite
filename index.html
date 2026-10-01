@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>within the consciousness</title>
+    <title>the consciousness</title>
 
     <style>
         body {
@@ -31,6 +30,14 @@
             cursor: pointer;
             opacity: 1;
             transition: opacity 1.5s ease;
+
+            /* prevent blue flash / selection on tap */
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            user-select: none;
+            outline: none;
+            touch-action: manipulation;
+            will-change: opacity;
         }
 
         #intro span {
@@ -66,6 +73,8 @@
         intro.addEventListener("click", () => {
             if (started) return;
             started = true;
+
+            document.title = "within the consciousness";
 
             music.play().catch(error => {
                 console.log("Music could not start:", error);
