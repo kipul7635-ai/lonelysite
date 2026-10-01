@@ -83,6 +83,53 @@
             margin-top: 4px;
         }
 
+        /* Send a thought */
+        #thought-form {
+            margin-top: 50px;
+            color: #888;
+            font-size: 13px;
+        }
+
+        #thought-form textarea {
+            display: block;
+            margin: 10px auto;
+            width: min(360px, 90%);
+            height: 70px;
+            background: rgba(0, 0, 0, 0.65);
+            color: #ccc;
+            border: 1px solid #444;
+            border-radius: 3px;
+            padding: 8px;
+            font-family: monospace;
+            font-size: 13px;
+            resize: none;
+        }
+
+        #thought-form button {
+            background: rgba(0, 0, 0, 0.65);
+            color: #ccc;
+            border: 1px solid #444;
+            border-radius: 3px;
+            padding: 4px 14px;
+            font-family: monospace;
+            cursor: pointer;
+        }
+
+        #thought-form button:disabled {
+            opacity: 0.5;
+            cursor: default;
+        }
+
+        #thought-status {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #777;
+        }
+
+        #thought-status:empty {
+            display: none;
+        }
+
         /* Floating text */
         .float {
             animation:
@@ -95,7 +142,7 @@
             /* readability box */
             background: rgba(0, 0, 0, 0.65);
             padding: 2px 10px;
-            border-radius: 0px;
+            border-radius: 3px;
             box-decoration-break: clone;
             -webkit-box-decoration-break: clone;
         }
@@ -154,6 +201,13 @@
         <span class="days" id="thoughts">0</span>
         thoughts thought of
     </div>
+
+    <form id="thought-form">
+        <label for="thought-text">send a thought</label>
+        <textarea id="thought-text" maxlength="500"></textarea>
+        <button type="submit" id="thought-send">send</button>
+        <div id="thought-status"></div>
+    </form>
 
     <script>
         const intro = document.getElementById("intro");
@@ -239,6 +293,39 @@
         }
 
         applyFloat();
+
+        /* Send a thought -> /api/thought (Cloudflare Pages Function -> Telegram) */
+        const thoughtForm   = document.getElementById("thought-form");
+        const thoughtText   = document.getElementById("thought-text");
+        const thoughtSend   = document.getElementById("thought-send");
+        const thoughtStatus = document.getElementById("thought-status");
+
+        thoughtForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const text = thoughtText.value.trim();
+            if (!text) return;
+
+            thoughtSend.disabled = true;
+            thoughtStatus.textContent = "sending...";
+
+            try {
+                const res = await fetch("/api/thought", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ text })
+                });
+
+                if (!res.ok) throw new Error("request failed");
+
+                thoughtText.value = "";
+                thoughtStatus.textContent = "thought received.";
+            } catch (err) {
+                thoughtStatus.textContent = "the thought got lost.";
+            } finally {
+                thoughtSend.disabled = false;
+            }
+        });
 
         let started = false;
 
